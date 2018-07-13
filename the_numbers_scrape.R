@@ -3,11 +3,8 @@ library('dplyr')
 library('stringi')
 library('omdbapi')
 library('Hmisc')
-require(V8)
 library('stringr')
-require('XML')
 library('tidyverse')
-require('jsonlite')
 #########################
 #Data base imdb title comparison
 #####################
