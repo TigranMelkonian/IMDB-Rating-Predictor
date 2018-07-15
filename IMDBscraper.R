@@ -8,15 +8,14 @@ library('plyr')
 library('taRifx')
 
 #############################
-###IMDB SCRAPE - retirieving movie info from IMDB.com
+###IMDB SCRAPER - retirieving movie info from IMDB.com
 #############################
-#Args
-#Returns
+#Returns:
 #A data frame containing one row per movie and nine columns including: duration in minutes,
 #MPAA rating, genre(s), director(S),IMDB rating, actor(S)'/director(S)' facebook likes,and full cast
 
 ##OMDB api key
-omdbKey <-  'e23d3bab'
+omdbKey <-  'SECRET_KEY'
 omdb_api_key(force = FALSE)
 
 #retrieve imdb ID for each movie scraped from theNumbers
@@ -52,7 +51,6 @@ write.csv(imdbURL, "movie_imdb_url.csv")
 
 
 ##get movie details 
-
 get_movie_data <- function(url){
   
   html <- read_html(url)
