@@ -55,103 +55,111 @@ get_movie_data <- function(url){
   
   html <- read_html(url)
   
-  #title of movie
-  title <- html%>%
+   #title of movie
+  title <- tryCatch({html%>%
     html_nodes(xpath = '//div[@class="title_wrapper"]/h1/text()') %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #length of movie in minutes
-  length <- html%>%
+  length <- tryCatch({html%>%
     html_nodes("#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div > time") %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #find MPAA
-  mpaa <- html%>%
+  mpaa <- tryCatch({html%>%
     html_nodes("#titleStoryLine > div:nth-child(12) > span:nth-child(2)") %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)%>%
     strsplit(mpaa, split = " ", fixed = TRUE)%>%
     unlist(mpaa)
+  }, error=function(cond)
+    {
+    NA
+  })
   
   mpaa <- mpaa[2]
   
   #Find genere(s)
-  generes <- html%>%
+  generes <- tryCatch({html%>%
     html_nodes('.subtext .itemprop') %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   
   #find director(S)
-  directors <- html%>%
+  directors <- tryCatch({html%>%
     html_nodes('.credit_summary_item:nth-child(2) .itemprop') %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #find top iactor(s)
-  actors <- html%>%
+  actors <- tryCatch({html%>%
     html_nodes(  '.credit_summary_item:nth-child(4) .itemprop') %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #number of votes
-  numVotes <- html%>%
+  numVotes <- tryCatch({html%>%
     html_nodes("a .small") %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #find imdb score
-  imdbScore <- html%>%
+  imdbScore <- tryCatch({html%>%
     html_nodes("strong span") %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   #find metascore
-  metascore <- html%>%
+  metascore <- tryCatch({html%>%
     html_nodes("div.titleReviewBar > div:nth-child(1) > a > div") %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
+  }, error=function(cond)
+  {
+    NA
+  })
   
   
   #find aspect ratio
-  aspectRatio <- html%>%
+  aspectRatio <- tryCatch({html%>%
     html_nodes(xpath = '//h4[contains(text(), "Aspect Ratio:")]/following-sibling::node()/descendant-or-self::text()') %>%
     html_text()%>%
     gsub('[\r\n\t]', '', .)
-  
-  
-  if (is_empty(mpaa)) {   # Some movies don't have a MPAA rating
-    mpaa <- "UNRATED"
-  }
-  if (is_empty(title)) {   # Some movies don't have a MPAA rating
-    title <- NA
-  }
-  if (is_empty(generes)) {   # case where scraper fails
-    generes <- NA
-  }
-  if (is_empty(directors)) {   # case where scraper fails
-    directors <- NA
-  }
-  if (is_empty(actors)) {   # case where scraper fails
-    actors <- NA
-  }
-  if (is_empty(numVotes)) {   # case where scraper fails
-    numVotes <- NA
-  }
-  if (is_empty(imdbScore)) {   # case where scraper fails
-    imdbScore <- NA
-  }
-  if (is_empty(metascore)) {  # case where scraper fails
-    metascore <- NA
-  }
-  if (is_empty(aspectRatio)) {   # case where scraper fails
-    aspectRatio <- NA
-  }
-  if (is_empty(length)) {   # case where scraper fails
-    length <- NA
-  }
+  }, error=function(cond)
+  {
+    NA
+  })
   
   
   
