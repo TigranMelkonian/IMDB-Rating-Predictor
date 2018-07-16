@@ -16,25 +16,46 @@ library('tidyverse')
 #Scrape Raw HTML from page
 search_results <- read_html(search_url)
 
+
 #pull all movie titles and their release dates for the first 5000 movies on the site
-movieName_and_releasDate <- lapply(paste0('https://www.the-numbers.com/movie/budgets/all/', seq(1,5501, 100)),
-                                   function(url){
-                                     url %>% read_html() %>% 
-                                       html_nodes("td a") %>% 
-                                       html_text() %>%
-                                       gsub('[\r\n\t]', '', .)
-                                     
-                                   })
+movieName_and_releasDate <-
+  lapply(paste0(
+    'https://www.the-numbers.com/movie/budgets/all/',
+    seq(1, 5501, 100)
+  ),
+  function(url) {
+    tryCatch({
+      url %>% read_html() %>%
+        html_nodes("td a") %>%
+        html_text() %>%
+        gsub('[\r\n\t]', '', .)
+    }, error = function(cond)
+    {
+      NA
+    })
+    
+  })
 
 #pull production budget, domestic gross, and worldwide gross for the first 5000 movies on the site
-gross_and_budget <- lapply(paste0('https://www.the-numbers.com/movie/budgets/all/', seq(1,5501, 100)),
-                           function(url){
-                             url %>% read_html() %>% 
-                               html_nodes(".data") %>% 
-                               html_text() %>%
-                               gsub('[\r\n\t]', '', .)
+gross_and_budget <-
+  lapply(paste0(
+    'https://www.the-numbers.com/movie/budgets/all/',
+    seq(1, 5501, 100)
+  ),
+  function(url) {
+    tryCatch({
+      url %>% read_html() %>%
+        html_nodes(".data") %>%
+        html_text() %>%
+        gsub('[\r\n\t]', '', .)
+    }, error = function(cond)
+    {
+      NA
+    })
+    
+    
+  })
                              
-                           })
 #unlist to a vector, convert vector to dataset, assign col names
 vector1 <- unlist(movieName_and_releasDate)
 m1 <- matrix(vector1, ncol = 2, byrow = TRUE)
@@ -52,6 +73,7 @@ colnames(d2) <-
     'production_budget',
     'domestic_gross',
     'worldwide_gross')
+
 theNumbersData <- cbind(d1, d2)
 
 #get rid of useless col
