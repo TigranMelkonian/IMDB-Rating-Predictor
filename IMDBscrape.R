@@ -14,11 +14,8 @@ library('taRifx')
 #A data frame containing one row per movie and nine columns including: duration in minutes,
 #MPAA rating, genre(s), director(S),IMDB rating, actor(S)'/director(S)' facebook likes,and full cast
 
-##OMDB api key
-omdbKey <-  'SECRET_KEY'
-omdb_api_key(force = FALSE)
 
-##get movie details
+##function to get movie details
 get_movie_data <- function(url) {
   html <- read_html(url)
   
@@ -36,8 +33,7 @@ get_movie_data <- function(url) {
   #length of movie in minutes
   length <- tryCatch({
     html %>%
-      html_nodes(
-        "#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div > time"
+      html_nodes('#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div > time'
       ) %>%
       html_text() %>%
       gsub('[\r\n\t]', '', .)
@@ -49,7 +45,7 @@ get_movie_data <- function(url) {
   #find MPAA
   mpaa <- tryCatch({
     html %>%
-      html_nodes("#titleStoryLine > div:nth-child(12) > span:nth-child(2)") %>%
+      html_nodes(xpath = '//meta[@itemprop="contentRating"]/following-sibling::node()/descendant-or-self::text()') %>%
       html_text() %>%
       gsub('[\r\n\t]', '', .) %>%
       strsplit(mpaa, split = " ", fixed = TRUE) %>%
@@ -58,8 +54,7 @@ get_movie_data <- function(url) {
   {
     NA
   })
-  
-  mpaa <- mpaa[2]
+
   
   #Find genere(s)
   generes <- tryCatch({
@@ -96,7 +91,7 @@ get_movie_data <- function(url) {
   })
   
   #number of votes
-  numVotes <- tryCatch({
+  num_votes <- tryCatch({
     html %>%
       html_nodes("a .small") %>%
       html_text() %>%
@@ -107,7 +102,7 @@ get_movie_data <- function(url) {
   })
   
   #find imdb score
-  imdbScore <- tryCatch({
+  imdb_score <- tryCatch({
     html %>%
       html_nodes("strong span") %>%
       html_text() %>%
@@ -116,6 +111,17 @@ get_movie_data <- function(url) {
   {
     NA
   })
+  
+  popularity <- tryCatch({
+    html %>%
+      html_nodes("div.plot_summary_wrapper > div.titleReviewBar > div:nth-child(5) > div.titleReviewBarSubItem") %>%
+      html_text() %>%
+      gsub('[\r\n\t]', '', .)
+  }, error = function(cond)
+  {
+    NA
+  })
+  
   
   #find metascore
   metascore <- tryCatch({
@@ -129,8 +135,19 @@ get_movie_data <- function(url) {
   })
   
   
+  
+  critic_reviews <- tryCatch({
+    html%>%
+      html_nodes(xpath = '//span/a[contains(@href, "externalreviews")]/text()') %>%
+      html_text() %>%
+      gsub('[\r\n\t]', '', .)
+  }, error = function(cond)
+  {
+    NA
+  })
+
   #find aspect ratio
-  aspectRatio <- tryCatch({
+  aspect_ratio <- tryCatch({
     html %>%
       html_nodes(xpath = '//h4[contains(text(), "Aspect Ratio:")]/following-sibling::node()/descendant-or-self::text()') %>%
       html_text() %>%
@@ -140,24 +157,33 @@ get_movie_data <- function(url) {
     NA
   })
   
-  data.frame(
+  data <- data.frame(
     title[1],
     toString(generes),
     toString(actors),
     toString(directors),
     length,
-    mpaa,
-    imdbScore,
+    mpaa[1],
+    imdb_score,
     metascore,
-    numVotes,
-    aspectRatio
+    popularity,
+    critic_reviews,
+    num_votes,
+    aspect_ratio
   )
+  return(data)
 }
+
 #get movie data for each moive url in imdbURL
-datalist <- list()
-for (i in 1:length(imdbURL)) {
-  datalist[[i]]<- get_movie_data(imdbURL[i])
+for (i in 1:nrow(imdbURL)) {
+  if (i == 1){
+    final_data <- get_movie_data(imdbURL$imdbURL[i])
+  }else{
+    final_data <- rbind(final_data, get_movie_data(imdbURL$imdbURL[i]))
+  }
+  cat(paste0('\nFinished: ', i, ". Starting next loop on " , i+1, sep =' '))
 }
+
 
 
 #Convert list of dataframes to one dataframe
