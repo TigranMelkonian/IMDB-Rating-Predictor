@@ -15,7 +15,7 @@ library('taRifx')
 #MPAA rating, genre(s), director(S),IMDB rating, actor(S)'/director(S)' facebook likes,and full cast
 
 
-##function to get movie details
+##get movie details
 get_movie_data <- function(url) {
   html <- read_html(url)
   
@@ -30,14 +30,15 @@ get_movie_data <- function(url) {
     NA
   })
   
+  
   #length of movie in minutes
-  length <- tryCatch({
+  length <- tryCatch(
     html %>%
       html_nodes('#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div > time'
       ) %>%
       html_text() %>%
       gsub('[\r\n\t]', '', .)
-  }, error = function(cond)
+  ,error = function(cond)
   {
     NA
   })
@@ -152,11 +153,12 @@ get_movie_data <- function(url) {
       html_nodes(xpath = '//h4[contains(text(), "Aspect Ratio:")]/following-sibling::node()/descendant-or-self::text()') %>%
       html_text() %>%
       gsub('[\r\n\t]', '', .)
-  }, error = function(cond)
+  } , error=function(cond)
   {
     NA
   })
   
+
   data <- data.frame(
     title[1],
     toString(generes),
@@ -171,6 +173,7 @@ get_movie_data <- function(url) {
     num_votes,
     aspect_ratio
   )
+  
   return(data)
 }
 
@@ -178,11 +181,16 @@ get_movie_data <- function(url) {
 for (i in 1:nrow(imdbURL)) {
   if (i == 1){
     final_data <- get_movie_data(imdbURL$imdbURL[i])
-  }else{
-    final_data <- rbind(final_data, get_movie_data(imdbURL$imdbURL[i]))
+  }else {
+    tryCatch({
+      final_data <- rbind.fill(final_data, get_movie_data(imdbURL$imdbURL[i]))},error=function(cond)
+    {
+      NA
+    })
   }
   cat(paste0('\nFinished: ', i, ". Starting next loop on " , i+1, sep =' '))
 }
+
 
 
 
