@@ -192,32 +192,25 @@ for (i in 1:nrow(imdbURL)) {
 }
 
 
-
-
-#Convert list of dataframes to one dataframe
-df<- ldply(datalist, data.frame)
-
-#get rid of duplicates
-dfClean <- unique(df)
-
-#convert title to a string and then get rid of extra white space
-dfClean$title <- as.character(dfClean$title)
+#get rid of extra white space
 trim.trailing <- function (x) sub("\\s+$", "", x)
-for (i in 1:nrow(dfClean)) {
-  dfClean$title[i]<- trim.trailing(dfClean$title[i])
+for (i in 1:nrow(final_data)) {
+  final_data$title[i]<- trim.trailing(final_data$title[i])
 }
-
 
 #add on financial details from theNumbers Data
 theNumbersData <- theNumbersData[, c(2, 1, 3, 4, 5)]
-df_final <- merge(dfClean, theNumbersData, by = c("title"))
+df_final <- merge(final_data, theNumbersData,by = "title")
 
 #rename columns
 colnames(df_final) <- c("title", "genere(s)",
                         "actors", "directors", 
                         "length", "mpaa", 
                         "imdbScore", "metaScore",
-                        "numVotes", "aspectRatio",
-                        "releaseDate", "productionBudget", 
-                        "domesticGross", "worldWideGross")
+                        "popularity", "critic_reviews",
+                        "num_votes", "aspect_ratio",
+                        "release_date", "production_budget", 
+                        "domestic_gross", "world_wide_gross")
 
+#save final dataset as csv
+write.csv(df_final, "imdbDataFinal.csv")
